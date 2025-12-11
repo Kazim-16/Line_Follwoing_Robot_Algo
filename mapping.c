@@ -1,4 +1,3 @@
-//Heyyyyyyyyy
 #include <stdio.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -222,11 +221,11 @@ void junction_response(int j)
     }
     else if (j==2)
     {
-        special_response();
+        special_response(j);
     }
     else if (j==3)
     {
-        special_response();
+        special_response(j);
     }
     else // j == -1 → normal line
     {
@@ -234,7 +233,76 @@ void junction_response(int j)
     }
 }
 
+void special_response()
+{
+    bool left_path     = (s_state[0] > 2000 || s_state[1] > 2000);
+    bool right_path    = (s_state[7] > 2000 || s_state[8] > 2000);
+    bool straight_path = (s_state[3] >2000 &&s_state[5] > 2000); 
+    // Convert local paths → absolute world directions
+    bool can_go[4] = {false, false, false, false};
+    // 0:NORTH, 1:EAST, 2:SOUTH, 3:WEST
 
+    // Straight
+    if (straight_path)
+        can_go[current_dir] = true;
+
+    // Left turn
+    if (left_path)
+        can_go[(current_dir + 3) % 4] = true;
+
+    // Right turn
+    if (right_path)
+        can_go[(current_dir + 1) % 4] = true;
+
+    // Priority order: EAST → NORTH → WEST → SOUTH
+    int priority[4] = {EAST, NORTH, WEST, SOUTH};
+
+    int chosen_dir = -1;
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (can_go[priority[i]])
+        {
+            chosen_dir = priority[i];
+            break;
+        }
+    }
+
+    // SAFETY: if nothing detected (should never happen)
+    if (chosen_dir == -1)
+        return;
+
+    // Decide turn type based on chosen direction
+    int turn = (chosen_dir - current_dir + 4) % 4;
+    // 0 = straight
+    // 1 = right
+    // 2 = U-turn
+    // 3 = left
+
+    if (turn == 0)
+    {
+        motor_drive_bit_f(200);
+        vTaskDelay(200);
+    }
+    else if (turn == 1)
+    {
+        motor_drive_r(200);
+        vTaskDelay(200);
+    }
+    else if (turn == 3)
+    {
+        motor_drive_l(200);
+        vTaskDelay(200);
+    }
+    else if (turn == 2)
+    {
+        motor_drive_u(220);
+        vTaskDelay(350);
+    }
+
+    // Update current direction
+    current_dir = chosen_dir;
+}
 
 float position()
 {
