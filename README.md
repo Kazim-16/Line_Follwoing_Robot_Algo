@@ -160,7 +160,7 @@ gyro_z_bias = sum / CALIB_SAMPLES;
 - Sensor data acquisition and normalization  
 - Real-time line position estimation using weighted averaging  
 - PID control loop for motor correction  
-- Junction detection using binary pattern recognition  
+- Junction detection using binary pattern recognition
 - Gyro-based yaw tracking for closed-loop turn control  
 - State-based switching between navigation modes  
 
@@ -168,5 +168,6 @@ gyro_z_bias = sum / CALIB_SAMPLES;
 
 - Implement full PID tuning(add D term)  
 - Implement a two-pass maze-solving algorithm where the robot explores and maps the maze in the first run, and computes an optimized shortest path for efficient navigation in the second run.
-
+- Reduce yaw drift caused by gyroscope integration errors by incorporating a \textbf{magnetometer} for absolute heading correction.
+- Implement \textbf{sensor fusion} (e.g., complementary/Kalman filter) to improve orientation accuracy during long runs.
 ---
